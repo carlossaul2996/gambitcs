@@ -1,56 +1,39 @@
-# Welcome to your Expo app 👋
+# GambitCS
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Local-first personal finance app for iOS: weekly budgets from three spending plans, plus a simulator that projects your year. Built with React Native, Expo, TypeScript and SQLite.
 
-## Get started
+## Status
 
-1. Install dependencies
+Work in progress. Currently building **v1.0 (core loop)**. See the [milestones](https://github.com/carlossaul2996/gambitcs/milestones) for what each release includes.
 
-   ```bash
-   npm install
-   ```
+## What it does
 
-2. Start the app
+- **Pick a plan:** Tight, Balanced or Easy. Choose how much to save each week, and every category adjusts to it.
+- **A weekly budget that follows your bills:** rent, phone and other bills show in full in the week they're due, instead of being spread across the month.
+- **A simulator for your year:** see what you'll save month by month and week by week, and change your plan from there.
+- **Your data stays on your phone:** no bank connection. You log what you spend.
 
-   ```bash
-   npx expo start
-   ```
+## Tech stack
 
-In the output, you'll find options to open the app in a
+- React Native + Expo, TypeScript in strict mode
+- Expo Router for navigation
+- NativeWind for styling
+- expo-sqlite + Drizzle ORM for the local database
+- i18next + expo-localization (English and Spanish)
+- Jest for tests
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Running it locally
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Coming soon. GambitCS runs as an Expo development build, and the setup steps will be added here.
 
-## Get a fresh project
+## Docs
 
-When you're ready, run:
+- [Architecture](docs/ARCHITECTURE.md): layers, folder structure and navigation map
+- [Data model](docs/DATA_MODEL.md): every table and the rules that connect them
+- [Decisions](docs/decisions.md): technical choices and why they were made
 
-```bash
-npm run reset-project
-```
+## License
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+© 2026 Carlos Martinez. All rights reserved.
 
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+This code is public so you can read it, but it isn't licensed for reuse.
