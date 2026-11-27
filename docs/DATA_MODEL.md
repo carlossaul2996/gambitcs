@@ -1,6 +1,6 @@
 # GambitCS — Data model
 
-Last updated: November 19, 2026 (Day 2).
+Last updated: November 19, 2026.
 Purpose: every table, field, type and relation in the local SQLite database, the rules that keep them consistent, and the September 2026 sample walked through them. Product behavior lives in `GambitCS_Decisions_Update.md` (it wins on behavior); layers and folders live in `docs/ARCHITECTURE.md`; coding, backend and security decisions live in `GambitCS_Tech_Decisions.md`. The libraries (expo-sqlite + Drizzle) are logged in `docs/decisions.md`.
 
 ---
@@ -12,7 +12,7 @@ Purpose: every table, field, type and relation in the local SQLite database, the
 Two deliberate exceptions, each with its reason:
 
 - **`goals.weekly_cents` is stored even for the target-date method.** It is the amount the user saw and agreed to in the receipt card. Recalculating it every week would change After goals without the user doing anything. It is recalculated only when the goal is saved again.
-- **`balance.amount_cents` is the number the user typed.** The app can't read the bank, so the typed number is the anchor the balance formula starts from (§6.2).
+- **`balance.amount_cents` is the number the user typed.** The app can't read the bank, so the typed number is the anchor the balance formula starts from (section 6.2).
 
 ---
 
@@ -26,12 +26,12 @@ Two deliberate exceptions, each with its reason:
   - **balance adjustments**, whose signed `amount_cents` is never zero and never counts as Spent or Income.
   - `budget_decision_weeks.amount_cents` is also signed, because it records a week's result: **+ under, − over**, the same sign rule as the screens ("+ means good").
 - **One stored amount per thing, per occurrence, in its own frequency.** Rent is stored as `130000`, monthly. Its weekly equivalent ($300) is calculated by the plan engine and never stored.
-- **No cent is lost when dividing.** When an amount is split into parts, the leftover cents go to the last part: $25 spread over 3 weeks is 833 + 833 + 834. A single stored rate (`goals.weekly_cents`) is rounded up to the cent instead, and the last Weekly row only adds what's missing (§6.4).
+- **No cent is lost when dividing.** When an amount is split into parts, the leftover cents go to the last part: $25 spread over 3 weeks is 833 + 833 + 834. A single stored rate (`goals.weekly_cents`) is rounded up to the cent instead, and the last Weekly row only adds what's missing (section 6.4).
 
 ### Dates and times
 - **A day is text `'YYYY-MM-DD'`** (a local day, no time, no time zone), in a column whose name ends in `_date`. SQLite has no date type, and this format sorts and compares correctly as text.
 - **A week is stored by its Monday** (`week_start`). The month a week belongs to (the week whose Sunday falls in it) is calculated by the calendar engine, never stored.
-- **`created_at` is the moment a row was saved**, in UTC milliseconds (`INTEGER`). It orders entries within a day and drives the balance rule (§6.2). It never decides the week.
+- **`created_at` is the moment a row was saved**, in UTC milliseconds (`INTEGER`). It orders entries within a day and drives the balance rule (section 6.2). It never decides the week.
 - **Never `new Date('2026-09-13')`.** JavaScript reads it as midnight UTC, which is the day before in Vancouver. All day math goes through `src/lib/dates.ts`, tested with Jest.
 - **`today()` is the only source of "today".** In development builds it can be set (the dev clock), for example to Sun, Sep 13, 2026, to replay the sample.
 - **A clock time with no day is `'HH:MM'`** text (quiet hours).
@@ -51,7 +51,7 @@ Activity, Recent activity and Balance adjustment rows show no time (decided Nove
 - **Every table has `created_at`**, except `balance`, which has `set_at` because its row is replaced on every update.
 - **Date checks:** every date column has `CHECK (date(col) IS col)`; a nullable one is written `CHECK (col IS NULL OR date(col) IS col)`. Week columns also check `strftime('%w', col) = '1'` (a Monday). `strftime` alone is not enough: SQLite passes a `CHECK` that evaluates to NULL, so `'banana'` and `'2026-02-30'` would get through (tested).
 - **Time checks:** `CHECK (strftime('%H:%M', col) IS col)` accepts `'22:00'` and `'07:00'` and rejects `'7:00'`, `'25:00'`, `'22:00:00'` (tested).
-- **Foreign keys** are declared on every link, and the database provider runs `PRAGMA foreign_keys = ON` when it opens the connection (SQLite ignores them otherwise). Default action is no action (a referenced row can't be deleted), except the two listed in §5: `contributions.goal_id` cascades and `budget_decisions.contribution_id` is set to null.
+- **Foreign keys** are declared on every link, and the database provider runs `PRAGMA foreign_keys = ON` when it opens the connection (SQLite ignores them otherwise). Default action is no action (a referenced row can't be deleted), except the two listed in section 5: `contributions.goal_id` cascades and `budget_decisions.contribution_id` is set to null.
 - **Service rules** are rules the schema can't express; the services check them and Jest tests cover them. Each table lists its own.
 
 ---
@@ -237,7 +237,7 @@ A foreign key can't say "the newest one on or before", so these are lookups in t
 
 - `CHECK (preset_key IS NOT NULL OR name IS NOT NULL)`.
 - Renaming a suggested category sets `name` and keeps `preset_key`. Re-adding a deleted suggestion reuses its row, so its history stays connected.
-- **Never deleted.** Old entries point to it. Whether a category exists in a week comes from that week's plan version (§6.1).
+- **Never deleted.** Old entries point to it. Whether a category exists in a week comes from that week's plan version (section 6.1).
 - Service rule: no two **current** categories (in the active version) share a **display name** (`name`, else the translated `preset_key`), ignoring capitals.
 
 #### `income_sources`
@@ -259,7 +259,7 @@ A foreign key can't say "the newest one on or before", so these are lookups in t
 | `is_custom` | INTEGER 0/1 | set on the first manual edit; only Reset to default clears it |
 | `created_at` | INTEGER | |
 
-Always exactly three rows, written when onboarding finishes. `is_custom` is stored, not derived: a profit-only change makes a plan Custom without pinning any category, and returning the profit to the default doesn't clear it (`Modelo_de_Plan_Reglas.md` §3b).
+Always exactly three rows, written when onboarding finishes. `is_custom` is stored, not derived: a profit-only change makes a plan Custom without pinning any category, and returning the profit to the default doesn't clear it (`Modelo_de_Plan_Reglas.md`, section 3b).
 
 #### `plan_versions`
 | Column | Type | Notes |
@@ -269,7 +269,7 @@ Always exactly three rows, written when onboarding finishes. `is_custom` is stor
 | `week_start` | TEXT, a Monday | the Monday of the week the change was saved |
 | `created_at` | INTEGER | |
 
-`UNIQUE (plan_id, week_start)`. Never deleted. See §6.1 for how versions are written and read.
+`UNIQUE (plan_id, week_start)`. Never deleted. See section 6.1 for how versions are written and read.
 
 #### `plan_version_categories`
 | Column | Type | Notes |
@@ -363,7 +363,7 @@ One history, shared by all three plans. Never deleted.
 | `set_date` | TEXT | the day it was typed |
 | `set_at` | INTEGER | the moment it was typed (UTC ms) |
 
-No row means no balance yet: Home shows "Add your balance". Each Update your balance replaces the row. See §6.2.
+No row means no balance yet: Home shows "Add your balance". Each Update your balance replaces the row. See section 6.2.
 
 #### `balance_adjustments`
 | Column | Type | Notes |
@@ -384,7 +384,7 @@ A record only: Activity and Recent activity read it; the balance formula, Spent,
 | `name` | TEXT, not null | |
 | `target_cents` | INTEGER, > 0 | |
 | `method` | TEXT: `weekly_amount` / `target_date` | what the user picked in "How do you want to save?" |
-| `weekly_cents` | INTEGER, > 0 | stored at save (§1, §6.4) |
+| `weekly_cents` | INTEGER, > 0 | stored at save (sections 1 and 6.4) |
 | `target_date` | TEXT, nullable | `CHECK ((method = 'target_date') = (target_date IS NOT NULL))`; at least this week's Sunday (service rule) |
 | `completed_date` | TEXT, nullable | |
 | `created_at` | INTEGER | |
@@ -448,7 +448,7 @@ Every closed week gets a row, quiet weeks included. **Handled** is calculated: t
 |---|---|---|
 | `id` | INTEGER PK | `CHECK (id = 1)` |
 | `is_onboarding_finished` | INTEGER 0/1 | travels in the saved file: the sign-in rule opens onboarding for a file without it |
-| `first_week_start` | TEXT, a Monday | the onboarding week, which is the warm-up week (§6.3) |
+| `first_week_start` | TEXT, a Monday | the onboarding week, which is the warm-up week (section 6.3) |
 | `language` | TEXT, nullable: `en` / `es` | empty = follow the phone |
 | `region` | TEXT, nullable | the phone's region (`CA`, `MX`), saved silently |
 | `is_notifications_enabled` | INTEGER 0/1 | "Enable reminders" turns it on; "Not now" leaves it off |
@@ -486,7 +486,7 @@ An entry is **counted** when it was logged after the balance was typed (`created
 ### 6.3 Closing a week and the new-week pop-up
 1. **At startup in a new week** (the first open on Monday or later, including coming back from the background), one transaction writes, for every closed week without a settlement, **oldest first**:
    - its `week_settlements` row, pointing to the active plan's version for that week;
-   - a Weekly `contributions` row for each goal that existed when that week closed and whose `completed_date` is still null (§6.4), which can complete a goal.
+   - a Weekly `contributions` row for each goal that existed when that week closed and whose `completed_date` is still null (section 6.4), which can complete a goal.
 2. **The ledger works out what's pending** for every closed week: its current result (budget − spent, + under / − over) minus its handled (the sum of its `budget_decision_weeks`). A late expense changes the result, never handled.
 3. **One pop-up, never two.** The pending amounts are netted into one number:
    - net over → the over-budget pop-up (Spread it out / Take it all this week / Ignore it), only for the over part, as the Decisions update describes;
@@ -503,7 +503,7 @@ An entry is **counted** when it was logged after the balance was typed (`created
 - **A goal gets a Weekly row for a closed week** if it existed when the week closed and its `completed_date` is null. **The last Weekly row only adds what's missing** to reach the target.
 - **`completed_date`** is set in the same transaction as the contribution that first takes Saved to or past the target (Weekly or Extra), and takes that contribution's `contribution_date`. No Weekly rows are written after it.
 - **An Extra may go past the target.** The goal then completes in the same transaction.
-- **Add money comes from money already saved.** It writes an Extra contribution linked only to its goal; this week's budget doesn't change. *(Closes Decisions update §7 and ARCHITECTURE §6, "Where an Extra's money comes from".)*
+- **Add money comes from money already saved.** It writes an Extra contribution linked only to its goal; this week's budget doesn't change. *(Closes Decisions update section 7 and ARCHITECTURE section 6, "Where an Extra's money comes from".)*
 - **Available to set aside** = account balance − Saved in all goals (deleted goals don't count; they're gone). Calculated. The Add money sheet warns when the amount goes over it; with no balance entered, there's no warning.
 
 ---
@@ -619,7 +619,7 @@ Calculated: budget **$1,530** ($230 + Rent, due Sep 1); spent **$1,555**; the we
 
 ## 11. To carry into the Decisions update
 - Rows in Activity, Recent activity and Balance adjustment show no time.
-- Add money comes from money already saved (closes §7 "Where an Extra's money comes from", and ARCHITECTURE §6).
+- Add money comes from money already saved (closes Decisions update section 7, "Where an Extra's money comes from", and ARCHITECTURE section 6).
 - Missed weeks are netted into one new-week pop-up.
 - The Add money sheet warns when the amount goes over "available to set aside".
 - The onboarding week is a warm-up week: no new-week pop-up and no carry-over.
@@ -628,5 +628,5 @@ Calculated: budget **$1,530** ($230 + Rent, due Sep 1); spent **$1,555**; the we
 - Activity titles: an expense with no merchant shows its category name; income shows its source name.
 - Variable income is a best guess per payment (corrects the Simulator line "uses the monthly amount the user entered").
 - No one-time items and no yearly income in v1.
-- Sample fixes: Trip to Mexico is **$1,005 (50%)** on Sep 14, not $975 (49%); New laptop and Emergency fund are **$1,310** and **$460** on Sep 14; the goals' starting Saved includes their creation weeks and two Add money Extras (§10).
+- Sample fixes: Trip to Mexico is **$1,005 (50%)** on Sep 14, not $975 (49%); New laptop and Emergency fund are **$1,310** and **$460** on Sep 14; the goals' starting Saved includes their creation weeks and two Add money Extras (section 10).
 - Open: the "Uber, $12.40, Sep 11" dialog example isn't in the sample's $118 split for Sep 7–13. Move the example to another week, or add it to the split.
