@@ -1,6 +1,6 @@
 # GambitCS — Architecture
 
-Last updated: November 17, 2026 (Day 1 of the development plan); §6 updated November 19, 2026 (Day 2); §3 updated November 25, 2026 (Day 3)
+Last updated: November 25, 2026
 
 How GambitCS is put together: the layers, where each file goes, how the user moves between screens, and where the widget and Firebase plug in. It doesn't repeat the details that live elsewhere:
 
@@ -9,7 +9,7 @@ How GambitCS is put together: the layers, where each file goes, how the user mov
 | What the app does (product rules) | `GambitCS_Decisions_Update.md` (Claude Project) |
 | How it looks | `GambitCS_Design_Spec.md` (Claude Project) and the Claude Design canvas **GambitCS — Simulator** |
 | Tech choices, backend and security | `GambitCS_Tech_Decisions.md` (Claude Project) |
-| Tables and fields | `docs/DATA_MODEL.md` (Day 2) |
+| Tables and fields | `docs/DATA_MODEL.md` |
 | Small decisions made while coding | `docs/decisions.md` |
 
 ---
@@ -22,7 +22,7 @@ How GambitCS is put together: the layers, where each file goes, how the user mov
 - **iOS first.** React Native + Expo (TypeScript), so the same code runs on Android; check the Android emulator now and then.
 - **Two languages.** Every text the user sees goes through i18next (English and Spanish).
 
-Stack: Expo Router, NativeWind, Lucide icons, expo-sqlite + Drizzle ORM, i18next + expo-localization, expo-secure-store, Sentry, EAS Build → TestFlight. Firebase and Resend come in v1.3. Full list and reasons: Tech decisions §1.
+Stack: Expo Router, NativeWind, Lucide icons, expo-sqlite + Drizzle ORM, i18next + expo-localization, expo-secure-store, Sentry, EAS Build → TestFlight. Firebase and Resend come in v1.3. Full list and reasons: Tech decisions, section 1.
 
 ---
 
@@ -82,7 +82,7 @@ flowchart TD
 | Types | `src/types/` | The app's own types: `Week`, `Plan`, `Goal`, `Entry`, money in cents. Engines and every other layer share them. The fields come with `DATA_MODEL.md`. | Nothing |
 | Repositories | `src/repositories/` | Read and save data with Drizzle, one per group of tables, and turn database rows into the app's types. | `db/`, `types/` |
 | Database | `src/db/` | Drizzle schema, migrations, the database provider, seed data. The database row types come from the schema (Drizzle makes them), so they aren't written by hand and don't live in `types/`. | — |
-| Account save | `src/account/` | Save the database to the account and bring it back (v1.3). See §5.2. | `db/`, adapters |
+| Account save | `src/account/` | Save the database to the account and bring it back (v1.3). See section 5.2. | `db/`, adapters |
 | Adapters | `src/adapters/` | Everything that talks to the phone or the internet: notifications, secure store, Firebase (Auth, Storage, Functions), the widget snapshot, Sentry. | Outside libraries |
 | Helpers | `src/lib/` | Small helpers: money in cents, dates as local days. | Nothing |
 | Languages | `src/i18n/` | `en.json`, `es.json` and the i18next setup. | — |
@@ -91,8 +91,8 @@ flowchart TD
 - A screen never touches the database. It gets data and actions from hooks.
 - Components get their data only from the screen that uses them, so they can be reused anywhere.
 - Engines import nothing but `lib/` and `types/`. That's why Jest can test them on the Mac without a phone, against the sample numbers in the Decisions update, and why a change to a table never breaks a money rule.
-- One user action = one transaction. Every transaction, and the account copy, goes through **one write queue**, one at a time (§5.2).
-- No screen and no feature hook starts an account save (§5.2).
+- One user action = one transaction. Every transaction, and the account copy, goes through **one write queue**, one at a time (section 5.2).
+- No screen and no feature hook starts an account save (section 5.2).
 
 ---
 
@@ -101,7 +101,7 @@ flowchart TD
 ```
 gambitcs/
 ├── src/
-│   ├── app/                Screens (Expo Router), see §4.5
+│   ├── app/                Screens (Expo Router), see section 4.5
 │   ├── components/         Shared UI: buttons, money field, sheets, tab bar, GambitLogo
 │   ├── hooks/              Bring data to the screens: useWeekSummary, useGoals
 │   ├── services/           One per user action: addExpense, moveToGoal, signIn, logOut
@@ -149,15 +149,15 @@ gambitcs/
 - **Engine tests use the sample numbers in the Decisions update**, for example: calendar, September 2026 = Aug 31–Sep 27 and the daylight saving changes; plan, $165 / $115 / $45 a week, cap $270, $547 with Freelance, $180 with Groceries pinned at $90; ledger, weeks of $273 / $295 / $230, September $2,328, $264.67 and $248 for the over-budget options, $12 net over, $8 net under; goals, To goals $50 and After goals $65, a $60 goal leaves $5 (Tight margin), an $80 goal leaves −$15 (goals take more than you save).
 - **Created on their own:** `ios/` (from `npx expo run:ios`, rebuilt from `app.config.ts`, left out of Git), `node_modules/`, `.expo/`.
 - **Path alias:** `@/` points to `src/`, so imports read `@/engines/plan`.
-- **Folders are created with their first file** (November 25, 2026, Day 3). The tree above is the map: a folder appears in the repository on the day its first file arrives, so there are no empty placeholder folders.
-- **No `LICENSE` file, on purpose** (November 25, 2026, Day 3). The repository is public so the code can be read, but all rights are reserved (see the README).
+- **Folders are created with their first file.** The tree above is the map: a folder appears in the repository on the day its first file arrives, so there are no empty placeholder folders.
+- **No `LICENSE` file, on purpose.** The repository is public so the code can be read, but all rights are reserved (see the README).
 - The structure can change while building; when it does, update this file the same day.
 
 ---
 
 ## 4. Navigation map
 
-The navigation map is every screen and how the user moves between them. §4.1–§4.4 describe it; §4.5 turns it into the files in `src/app/`.
+The navigation map is every screen and how the user moves between them. Sections 4.1–4.4 describe it; section 4.5 turns it into the files in `src/app/`.
 
 ### 4.1 Top level
 
@@ -300,7 +300,7 @@ Settings
  └── Create account          (only without an account) → sign-up screens → back to Settings
 ```
 - Settings is its own small stack above the tabs. Only Settings itself slides in from the left; screens inside it push from the right as usual. The tab bar stays hidden.
-- Notifications, Language and the profile block don't open screens: they work in place or open sheets (§4.4).
+- Notifications, Language and the profile block don't open screens: they work in place or open sheets (section 4.4).
 - **Creating an account from Settings:** the sign-up screens open on top of Settings, the phone's data becomes the account's data, and they all close at once back to Settings. Their "Already have an account? Sign in" link is hidden here.
 - **No Sign in from Settings, on purpose:** it would mix the phone's data with an account's data. Someone with an account who started without one uses Delete all data → Welcome → Sign in.
 
@@ -398,20 +398,20 @@ src/app/
 ├── new-week.tsx             dialog
 ├── move-to-goal.tsx         full screen, no tab bar
 ├── goal-completed.tsx       dialog
-└── dev/gallery.tsx          component gallery (Day 16), development builds only
+└── dev/gallery.tsx          component gallery, development builds only
 ```
 
 - **Path vs. search params.** The path says *which thing* the screen shows (`week/[start]`, `month/[month]`, `year/[year]`, `[goalId]`). Search params say *how to show it or where it was opened from*: the Simulator's `?plan=` (without it, Month and Week views would fall back to the active plan and show the wrong one), Activity's `?period=&start=`, Verify Email's `?purpose=`, and onboarding's `?from=summary`.
 - **Why the tabs are plain folders, not groups:** Calendar and the Simulator both have Month and Week screens. As groups they'd clash on the same path (`/week/...`); as folders they're `/calendar/week/...` and `/simulator/week/...`.
-- **◆ Activity in two tabs:** the screen is built once in `components/`; `home/activity.tsx` and `calendar/activity.tsx` are tiny files that both show it. Expo Router's "shared routes" feature is the alternative; compare on Day 6.
+- **◆ Activity in two tabs:** the screen is built once in `components/`; `home/activity.tsx` and `calendar/activity.tsx` are tiny files that both show it. Expo Router's "shared routes" feature is the alternative; compare them when navigation is built.
 - **File names are paths.** Renaming a file in `app/` changes its path, and things link to paths (the reminder opens `/quick-add`), so update those links too.
 
 **What the root `_layout.tsx` does**
-- **Splash and startup checks** (§4.1): keeps the splash up, runs the checks, opens the right area.
+- **Splash and startup checks** (section 4.1): keeps the splash up, runs the checks, opens the right area.
 - **Guards:** any file in `app/` can be opened by a link, even with no button pointing to it. `(auth)` opens only when there's no data on the phone, or for sign-up from Settings. Screens the plan hides until their release can use the same guard. `dev/gallery` redirects to Home outside development builds.
 - **Overlays:** each is declared here with its own way of appearing: sheet, dialog, full screen, and Settings sliding in from the left with a right-to-left swipe to close (a custom transition; the default iOS push and swipe-back go the other way).
 - **Sign-up from Settings:** the root presents the sign-up screens as a modal on top of Settings and closes them all at once after verifying.
-- **Background listener:** the one place that notices the app going to the background, for account saves (§5.2) and the new-week check.
+- **Background listener:** the one place that notices the app going to the background, for account saves (section 5.2) and the new-week check.
 
 ---
 
@@ -421,7 +421,7 @@ src/app/
 
 - The widget can't open the app's database. After any change to this week's or month's numbers, a service asks the widget adapter to write a small **snapshot of the totals** into the iOS **App Group** that the app and the widget share. The widget only reads that snapshot: the totals it shows, never the list of expenses.
 - It always shows the active plan. Small shows the week; medium shows the week and the month, plus the over-budget variant ("$X over this week").
-- Built with `expo-widgets` (React components) or native Swift: still open (Tech decisions §9). Either way it lives in `widget/` and needs development builds (Expo Go can't run it). The Android widget is deferred.
+- Built with `expo-widgets` (React components) or native Swift: still open (Tech decisions, section 9). Either way it lives in `widget/` and needs development builds (Expo Go can't run it). The Android widget is deferred.
 
 ### 5.2 Firebase and the account (v1.3)
 
@@ -434,19 +434,19 @@ src/app/
   - It **waits its turn in the write queue.** Every service transaction and the account copy go through one queue, one at a time. SQLite refuses `VACUUM INTO` while a transaction is open on the same connection (expo-sqlite uses one connection), and waiting also means the copy includes the action that just finished. The queue doesn't guess when it's safe: everything just waits its turn.
   - No screen and no feature hook (`useGoals`, say) ever starts a save.
 - **Firestore** holds only the email codes, and the app has no access to it: only the Functions read and write it. **Resend** sends the codes, called from the Functions. Secrets live in Google Secret Manager.
-- Saved files go to `backups/{uid}/{uploadTimeInMs}.backup` in Storage; the server keeps the newest 7. Details: Tech decisions §4–§7.
+- Saved files go to `backups/{uid}/{uploadTimeInMs}.backup` in Storage; the server keeps the newest 7. Details: Tech decisions, sections 4–7.
 
 ### 5.3 Sentry
 
-Crash reports only, set up through `adapters/`, with money data stripped before anything leaves the phone (Day 8).
+Crash reports only, set up through `adapters/`, with money data stripped before anything leaves the phone.
 
 ---
 
 ## 6. Open items that touch the architecture
 
-- **Firebase SDK:** React Native Firebase or the Firebase JS SDK (Tech decisions §9; recommended: React Native Firebase).
-- **Widget:** `expo-widgets` or Swift (Tech decisions §9).
-- **Activity in two tabs:** tiny route files or Expo Router's shared routes (Day 6).
-- **Logging out while offline:** wait for a connection, or warn that the latest changes would be lost (Tech decisions §9).
+- **Firebase SDK:** React Native Firebase or the Firebase JS SDK (Tech decisions, section 9; recommended: React Native Firebase).
+- **Widget:** `expo-widgets` or Swift (Tech decisions, section 9).
+- **Activity in two tabs:** tiny route files or Expo Router's shared routes (decide when navigation is built).
+- **Logging out while offline:** wait for a connection, or warn that the latest changes would be lost (Tech decisions, section 9).
 - **Creating an account from Settings with a Google or Apple account that already has saved data:** the phone's data would replace the account's. Decide before v1.3.
-- *Resolved November 19, 2026:* **Where an Extra's money comes from** (Add money): from money already saved, so this week's budget doesn't change; the sheet warns when the amount goes over what's available to set aside. See `docs/DATA_MODEL.md` §6.4 and the Decisions update, Stage 5.
+- *Resolved November 19, 2026:* **Where an Extra's money comes from** (Add money): from money already saved, so this week's budget doesn't change; the sheet warns when the amount goes over what's available to set aside. See section 6.4 of `docs/DATA_MODEL.md` and the Decisions update, Stage 5.
