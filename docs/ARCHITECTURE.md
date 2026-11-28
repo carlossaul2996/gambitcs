@@ -1,14 +1,14 @@
 # GambitCS — Architecture
 
-Last updated: November 25, 2026
+Last updated: November 27, 2026
 
 How GambitCS is put together: the layers, where each file goes, how the user moves between screens, and where the widget and Firebase plug in. It doesn't repeat the details that live elsewhere:
 
 | Topic | Where |
 |---|---|
-| What the app does (product rules) | `GambitCS_Decisions_Update.md` (Claude Project) |
-| How it looks | `GambitCS_Design_Spec.md` (Claude Project) and the Claude Design canvas **GambitCS — Simulator** |
-| Tech choices, backend and security | `GambitCS_Tech_Decisions.md` (Claude Project) |
+| What the app does (product rules) | `GambitCS_Decisions_Update.md` (private planning doc) |
+| How it looks | `GambitCS_Design_Spec.md` and the design mockups (both private) |
+| Tech choices, backend and security | `GambitCS_Tech_Decisions.md` (private planning doc) |
 | Tables and fields | `docs/DATA_MODEL.md` |
 | Small decisions made while coding | `docs/decisions.md` |
 
